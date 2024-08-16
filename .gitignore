@@ -1,0 +1,8 @@
+.env
+.ipynb_checkpoints
+.langgraph-data
+my_agent/__pycache__
+my_agent/utils/__pycache__
+static/
+
+
