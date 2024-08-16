@@ -16,32 +16,32 @@ import os
 class GraphConfig(TypedDict):
     model_name: Literal["anthropic", "openai"]
 
+# Define a new graph
+workflow = StateGraph(AgentState, config_schema=GraphConfig)
+
+# Define the two nodes we will cycle between
+workflow.add_node("agent", call_model)
+workflow.add_node("action", tool_node)
+
+# Set the entrypoint as `agent`
+workflow.set_entry_point("agent")
+
+# Add conditional edges
+workflow.add_conditional_edges(
+    "agent",
+    should_continue,
+    {
+        "continue": "action",
+        "end": END,
+    },
+)
+
+# Add a normal edge from `action` to `agent`
+workflow.add_edge("action", "agent")
+
 if __name__ == "__main__":
-    # Define a new graph
-    workflow = StateGraph(AgentState, config_schema=GraphConfig)
-
-    # Define the two nodes we will cycle between
-    workflow.add_node("agent", call_model)
-    workflow.add_node("action", tool_node)
-
-    # Set the entrypoint as `agent`
-    workflow.set_entry_point("agent")
-
-    # Add conditional edges
-    workflow.add_conditional_edges(
-        "agent",
-        should_continue,
-        {
-            "continue": "action",
-            "end": END,
-        },
-    )
-
-    # Add a normal edge from `action` to `agent`
-    workflow.add_edge("action", "agent")
-
-    # Compile the graph
     graph = workflow.compile(debug=True)
-
     result = graph.invoke({"messages": [{"role": "user", "content": "What is the weather in Tokyo?"}]})
     print(result)
+else:
+    graph = workflow.compile()
