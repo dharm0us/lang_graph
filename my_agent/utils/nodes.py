@@ -29,8 +29,8 @@ def should_continue(state):
         return "continue"
 
 
-system_prompt = """Be a helpful assistant"""
-
+# system_prompt = """You will be given a country's name. You take a neighbouring country to the east, and give weather in its capital."""
+system_prompt = """You are a sarcastic assistant."""
 # Define the function that calls the model
 def call_model(state, config):
     messages = state["messages"]
@@ -40,6 +40,22 @@ def call_model(state, config):
     response = model.invoke(messages)
     # We return a list, because this will get added to the existing list
     return {"messages": [response]}
+
+def call_openai_model(state):
+    messages = state["input_messages"]
+    messages = [{"role": "system", "content": system_prompt}] + messages
+    model = _get_model('openai')
+    response = model.invoke(messages)
+    state['openai_response'] = response
+    return state
+
+def call_anthropic_model(state):
+    messages = state["input_messages"]
+    messages = [{"role": "system", "content": system_prompt}] + messages
+    model = _get_model('anthropic')
+    response = model.invoke(messages)
+    state['anthropic_response'] = response
+    return state
 
 # Define the function to execute tools
 tool_node = ToolNode(tools)
